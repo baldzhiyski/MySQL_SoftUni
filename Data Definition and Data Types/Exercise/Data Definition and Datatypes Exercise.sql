@@ -13,7 +13,7 @@ PRIMARY KEY (town_id)
 );
 
 ALTER TABLE towns
-RENAME COLUMN town_id TO id; 
+CHANGE COLUMN town_id  id INT; 
 
 ALTER TABLE minions
 ADD COLUMN town_id INT, 
