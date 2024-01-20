@@ -53,6 +53,7 @@ HAVING `Min Salary`>800;
 SELECT COUNT(*) FROM products
 WHERE category_id = 2 AND price> 8;
 
+
 -- 05. Menu Prices
 SELECT category_id,
 ROUND(AVG(price),2) AS 'Average Price',
