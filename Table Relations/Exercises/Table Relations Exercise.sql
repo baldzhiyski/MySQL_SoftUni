@@ -23,6 +23,7 @@ INSERT INTO people (`person_id`, `first_name`, `salary`, `passport_id`)
 VALUES (1, 'Roberto', 43300.00, 102),
 		(2, 'Tom', 56100.00, 103),
         (3, 'Yana', 60200.00, 101);
+        
     
  -- 02. One-To-Many Relationship
  CREATE TABLE manufacturers(
@@ -30,7 +31,6 @@ VALUES (1, 'Roberto', 43300.00, 102),
  name VARCHAR(50) UNIQUE NOT NULL,
  established_on DATE NOT NULL 
  );
- 
  
  CREATE TABLE models(
  model_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -48,7 +48,6 @@ INSERT INTO `manufacturers`( `name`, `established_on`)
 VALUES ( 'BMW', '1916/03/01'),
        ( 'Tesla', '2003/01/01'),
        ( 'Lada', '1966/05/01');
-
 
 -- Inserts for models table
 INSERT INTO `models`(`name`, `manufacturer_id`)
