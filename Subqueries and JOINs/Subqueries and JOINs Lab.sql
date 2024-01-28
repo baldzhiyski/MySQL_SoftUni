@@ -38,7 +38,6 @@ FROM
     ORDER BY e.employee_id;
 
 
-
 -- 01.Managers
 SELECT 
     employee_id,
