@@ -118,25 +118,28 @@ DELIMITER ;
 ;
 
 -- 03. Employees Promotion By ID
-
-
-
-
-
-
-
-
-
+DELIMITER //
+CREATE PROCEDURE usp_raise_salary_by_id(id INT)
+BEGIN
+  DECLARE employee_id_count INT;
+  SET employee_id_count := (SELECT COUNT(*) FROM employees WHERE
+  employee_id = id);
+  
+  IF(employee_id_count = 1)
+  THEN
+     UPDATE employees SET salary = salary * 1.05 WHERE employee_id = id;
+  END IF;
+END//
 
 -- 04. Triggered
 CREATE TABLE deleted_employees(
-employee_id INT PRIMARY KEY,
+employee_id INT PRIMARY KEY AUTO_INCREMENT,
 first_name VARCHAR(50),
 last_name VARCHAR(50),
 middle_name VARCHAR(50),
 job_title VARCHAR(50),
 department_id INT,
-salary DOUBLE
+salary DECIMAL(19,4)
 );
 
 DELIMITER //
@@ -146,7 +149,8 @@ ON employees
 FOR EACH ROW
 BEGIN
      INSERT INTO deleted_employees
-     VALUES(OLD.employee_id,
+     (first_name,last_name,middle_name,job_title,department_id,salary)
+     VALUES(
      OLD.first_name,
      OLD.last_name,
      OLD.middle_name,
