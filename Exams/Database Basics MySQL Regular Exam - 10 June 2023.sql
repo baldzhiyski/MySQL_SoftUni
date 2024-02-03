@@ -108,7 +108,7 @@ LEFT JOIN students_courses AS sc ON s.id = sc.student_id
 WHERE  sc.course_id  IS NULL
 ORDER BY `password` DESC;
 
--- Students count
+-- 08.Students count
  SELECT COUNT(c.id) students_count, u.name university_name
 FROM universities u
           JOIN courses c ON u.id = c.university_id
@@ -140,6 +140,24 @@ u.address,
 u.tuition_fee
 FROM universities AS u
 JOIN cities AS c ON u.city_id = c.id
+ORDER BY tuition_fee;
+
+-- Another Solution 
+SELECT 
+    u.name AS university_name,
+    c.name AS city_name,
+    u.address,
+    (CASE
+        WHEN tuition_fee <= 800 THEN 'cheap'
+        WHEN tuition_fee >= 800 AND tuition_fee < 1200 THEN 'normal'
+        WHEN tuition_fee >= 1200 AND tuition_fee < 2500 THEN 'high'
+        ELSE 'expensive'
+    END) AS price_rank,
+    u.tuition_fee
+FROM
+    universities AS u
+        JOIN
+    cities AS c ON u.city_id = c.id
 ORDER BY tuition_fee;
 
 -- Section Four
