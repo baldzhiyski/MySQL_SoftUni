@@ -174,7 +174,8 @@ BEGIN
     JOIN students_courses AS sc ON c.id = sc.course_id
     JOIN students AS st ON st.id = sc.student_id
     WHERE c.name = course_name  AND 
-    st.is_graduated = 1);
+    st.is_graduated = 1
+    GROUP BY c.id);
     RETURN average_sum;
 END//
 DELIMITER ;
