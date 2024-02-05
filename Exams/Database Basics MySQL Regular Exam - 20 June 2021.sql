@@ -102,12 +102,11 @@ WHERE
 ORDER BY c.mileage DESC , first_name;
 
 -- 07. Number of courses for each car
--- In Progress
 SELECT 
     c.id AS 'car_id',
     c.make,
     c.mileage,
-    COUNT(c.id) AS 'count_of_courses',
+    COUNT(cs.id) AS 'count_of_courses',
     ROUND(AVG(cs.bill), 2) AS 'avg_bill'
 FROM
     cars AS c
