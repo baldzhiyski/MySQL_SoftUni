@@ -102,19 +102,117 @@ AND c.id IN (
 );
 
 -- 04. Delete
-DELETE players
-FROM players
-JOIN players_coaches AS pc ON players.id = pc.player_id
-JOIN coaches AS c ON c.id = pc.coach_id
-WHERE players.first_name = c.first_name AND players.last_name = c.last_name;
-
 DELETE FROM players
-WHERE id IN (
-    SELECT pc.player_id
-    FROM players_coaches AS pc
-    JOIN coaches AS c ON pc.coach_id = c.id
-);
+WHERE age >= 45;
 
+-- 05. Players
+SELECT 
+first_name,age,salary
+FROM players 
+ORDER BY salary DESC;
 
+-- 06. Young offense players without contract
+SELECT
+p.id,
+CONCAT_WS(' ',p.first_name,p.last_name) AS 'full_name',
+p.age,p.position,p.hire_date
+FROM players AS p
+JOIN skills_data AS sk ON sk.id = p.skills_data_id
+WHERE hire_date IS NULL AND 
+age<23 AND position = 'A' 
+AND sk.strength > 50
+ORDER BY salary;
 
+-- 07. Detail info for all teams
+SELECT 
+    t.name AS team_name,
+    t.established,
+    t.fan_base,
+    COUNT(p.id) AS players_count
+FROM
+    teams AS t
+       LEFT JOIN
+    players AS p ON p.team_id = t.id
+GROUP BY t.id
+ORDER BY `players_count` DESC,t.fan_base DESC;
 
+-- 08. The fastest player by towns
+SELECT 
+    MAX(sd.speed) AS 'max_speed', tw.name AS 'town_name'
+FROM
+    towns AS tw
+        LEFT JOIN
+    stadiums AS s ON tw.id = s.town_id
+        LEFT JOIN
+    teams AS t ON s.id = t.stadium_id
+        LEFT JOIN
+    players AS p ON t.id = p.team_id
+        LEFT JOIN
+    skills_data AS sd ON p.skills_data_id = sd.id
+WHERE
+    t.name <> 'Devify'
+GROUP BY tw.id
+ORDER BY `max_speed` DESC , tw.name;
+
+-- 09. Total salaries and players by country
+SELECT 
+    c.name,
+    COUNT(p.id) AS 'total_count_of_players',
+    SUM(p.salary) AS 'total_sum_of_salaries '
+FROM
+    countries AS c
+        LEFT JOIN
+    towns AS t ON c.id = t.country_Id
+        LEFT JOIN
+    stadiums AS s ON t.id = s.town_id
+        LEFT JOIN
+    teams AS tw ON tw.stadium_id = s.id
+        LEFT JOIN
+    players AS p ON p.team_id = tw.id
+GROUP BY c.name
+ORDER BY `total_count_of_players` DESC , c.name;
+
+-- 10. Find all players in the stadium
+DELIMITER //
+CREATE FUNCTION  udf_stadium_players_count (stadium_name VARCHAR(30))
+RETURNS VARCHAR(45)
+DETERMINISTIC
+BEGIN
+  RETURN(SELECT COUNT(p.id)
+  FROM players AS p
+  LEFT JOIN teams AS t ON p.team_id = t.id
+  JOIN stadiums AS s ON s.id = t.stadium_id
+  WHERE s.name = stadium_name
+  );
+END//
+DELIMITER ;
+
+SELECT udf_stadium_players_count ('Jaxworks') as `count`; 
+
+-- 11. Find good playmaker by teams
+DELIMITER //
+CREATE PROCEDURE udp_find_playmaker(min_dribble_points INT, team_name VARCHAR(45))
+BEGIN
+   SELECT 
+   CONCAT_WS(' ', p.first_name, p.last_name) AS full_name,
+   p.age,
+   p.salary,
+   sd.dribbling,
+   sd.speed,
+   t.name AS team_name
+   FROM players AS p
+   JOIN skills_data AS sd ON p.skills_data_id = sd.id
+   JOIN teams AS t ON t.id = p.team_id
+   WHERE sd.dribbling > min_dribble_points
+   AND t.name = team_name AND 
+   sd.speed >  (SELECT AVG(sdd.speed)
+   FROM players AS pp
+   JOIN skills_data AS sdd ON pp.skills_data_id = sdd.id)
+   ORDER BY sd.speed DESC
+   LIMIT 1;
+END
+//
+DELIMITER  ;
+drop procedure udp_find_playmaker;
+
+CALL udp_find_playmaker(20, 'Skyble');
