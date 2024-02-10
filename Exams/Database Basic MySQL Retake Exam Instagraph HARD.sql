@@ -156,3 +156,103 @@ FROM
 ORDER BY `followers` DESC
 LIMIT 1;
 
+-- 12. Commenting Myself
+SELECT 
+u.id,u.username,COUNT(c.id) as 'my_comments'
+FROM users AS u
+ JOIN posts AS p ON u.id = p.user_id
+ JOIN comments AS c ON p.id = c.post_id AND c.user_id = u.id
+GROUP BY u.id
+ORDER BY `my_comments` DESC , u.id;
+
+-- 13. User Top Posts
+SELECT u.id,u.username,p.caption
+FROM users AS u
+JOIN posts AS p ON u.id = p.user_id
+JOIN comments AS c ON c.post_id = p.id
+GROUP BY c.id
+ORDER BY u.id ;
+
+
+-- 14. Posts and Commentators
+SELECT 
+    p.user_id,
+    p.id AS post_id,
+    p.caption,
+    COUNT(c.id) AS comments_count
+FROM 
+    posts AS p
+LEFT JOIN 
+    comments AS c ON p.id = c.post_id
+WHERE 
+    p.id = (
+        SELECT 
+            pp.id
+        FROM 
+            posts AS pp
+        LEFT JOIN 
+            comments AS cc ON pp.id = cc.post_id
+        GROUP BY 
+            pp.user_id, pp.id
+        ORDER BY 
+            COUNT(cc.id) DESC, pp.id ASC
+        LIMIT 1
+    )
+GROUP BY 
+    p.user_id
+ORDER BY 
+    p.user_id ASC;
+
+-- 15. Post
+DELIMITER //
+CREATE PROCEDURE udp_post(
+    IN p_username VARCHAR(30),
+    IN p_password VARCHAR(30),
+    IN p_caption VARCHAR(255),
+    IN p_path VARCHAR(255))
+BEGIN
+    DECLARE user_id INT;
+    DECLARE picture_id INT;
+
+    -- Check if the password matches the username
+    SELECT id INTO user_id
+    FROM users
+    WHERE username = p_username AND password = p_password;
+    
+    IF user_id IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Password is incorrect!';
+    END IF;
+
+    -- Check if the picture exists
+    SELECT id INTO picture_id
+    FROM pictures
+    WHERE `path` = p_path;
+    
+    IF picture_id IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The picture does not exist!';
+    END IF;
+
+    -- Insert new post
+    INSERT INTO posts (caption, user_id, picture_id)
+    VALUES (p_caption, user_id, picture_id);
+END//
+DELIMITER ;
+
+CALL udp_post('UnderSinduxrein','4l8nYGTKMW','#new #procedure',
+'src/folders/resources/images/story/reformatted/img/hRI3TW31rC.img');
+
+-- 16. Filter
+DELIMITER //
+CREATE PROCEDURE udp_filter(hashtag VARCHAR(50))
+BEGIN
+SELECT 
+p.id,p.caption,u.username
+FROM posts AS p
+JOIN users AS u ON u.id = p.user_id
+WHERE p.caption LIKE CONCAT('%',hashtag,'%')
+ORDER BY p.id;
+END//
+DELIMITER ;
+
+DROP PROCEDURE udp_filter;
+CALL udp_filter('cool');
